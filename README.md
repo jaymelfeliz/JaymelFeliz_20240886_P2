@@ -24,14 +24,22 @@
 
 ## 1. Propósito del Laboratorio
 El objetivo principal de esta práctica es diseñar, implementar, auditar y diagnosticar un túnel **Site-to-Site IPsec VPN (IKEv2)** utilizando dos cortafuegos **FortiGate (FortiOS)** en un entorno de simulación GNS3. El laboratorio busca interconectar de forma segura la red de **Usuarios (Sitio A: `10.8.86.0/25`)** con la red de **Servidores (Sitio B: `10.8.86.128/28`)** a través de una red WAN no segura (`192.168.56.0/24`), garantizando confidencialidad, integridad y autenticidad del tráfico mediante algoritmos criptográficos robustos.
+<img width="484" height="559" alt="image" src="https://github.com/user-attachments/assets/57693e28-f11a-47c8-a05a-5affcdb53f8f" />
+
 
 ---
 
 ## 2. Topología de Red
 La arquitectura consta de tres zonas principales:
 * **Sitio A (Red Usuarios):** Un equipo cliente (VPCS) conectado a la interfaz LAN (`port2`) de **FortiGate-A**.
+* <img width="175" height="345" alt="image" src="https://github.com/user-attachments/assets/a66a4417-80c3-4421-a27c-72f576e75a10" />
+
 * **Red WAN / Internet:** Segmento no seguro (`192.168.56.0/24`) que conecta la interfaz `port1` de ambos cortafuegos.
+* <img width="466" height="332" alt="image" src="https://github.com/user-attachments/assets/5f90b2b5-6bb2-4dbf-a5a5-745dd9c74a25" />
+
 * **Sitio B (Red Servidores):** Un servidor Ubuntu conectado a la interfaz LAN (`port2`) de **FortiGate-B**, configurado dinámicamente mediante el servidor **DHCP** de este último.
+* <img width="157" height="328" alt="image" src="https://github.com/user-attachments/assets/8ebe52af-1376-426b-be5e-16ca3a9c6703" />
+
 
 ```mermaid
 flowchart LR
@@ -184,6 +192,8 @@ Durante las pruebas iniciales identificamos que el tráfico salía cifrado desde
   ```bash
   diagnose vpn ike gateway list name VPN-Nueva
   ```
+  <img width="725" height="124" alt="image" src="https://github.com/user-attachments/assets/6d60f2a5-d1ea-4eb0-8c46-16191394ee09" />
+
   *(Muestra la negociación IKEv2 en estado `established`, las IPs públicas de origen/destino y los algoritmos criptográficos acordados).*
 
 * **Estado de la Fase 2 (IPsec SA / Tráfico Cifrado):**
@@ -191,18 +201,21 @@ Durante las pruebas iniciales identificamos que el tráfico salía cifrado desde
   diagnose vpn tunnel list name VPN-Nueva
   ```
   *(Muestra las subredes locales/remotas y los contadores `tx pkt` y `rx pkt` incrementándose).*
+<img width="604" height="103" alt="image" src="https://github.com/user-attachments/assets/1f714e02-054a-4413-b0cf-cdc3126e7ef8" />
 
 #### 2. Captura de Paquetes en Tiempo Real (*Sniffer*)
 ```bash
 diagnose sniffer packet any "host 10.8.86.130" 4 10 local
 ```
 * **Resultado:** Confirmación de que el paquete ingresa por `port2 in` y es conmutado directamente hacia la interfaz virtual `VPN-Nueva out`.
+<img width="906" height="304" alt="image" src="https://github.com/user-attachments/assets/35ecddd1-8a84-48bb-8727-43ab3652977b" />
 
 #### 3. Verificación de la Tabla de Enrutamiento
 ```bash
 get router info routing-table all
 get router info routing-table details 10.8.86.128
 ```
+<img width="863" height="525" alt="image" src="https://github.com/user-attachments/assets/76fa399a-f56e-4600-89e9-a675c8f3d083" />
 
 #### 4. Pruebas de Diagnóstico Forzadas (Con y Sin VPN)
 * **Prueba con Origen LAN (Usa el Túnel):**
@@ -211,6 +224,7 @@ get router info routing-table details 10.8.86.128
   execute ping 10.8.86.130
   ```
   *Resultado:* **$0\%$ loss** (Éxito total a través de la VPN).
+<img width="639" height="326" alt="image" src="https://github.com/user-attachments/assets/d17b477e-4bc0-4ed4-a28c-99ee8d8586df" />
 
 * **Prueba con Origen WAN (Fuera del Túnel):**
   ```bash
@@ -218,6 +232,7 @@ get router info routing-table details 10.8.86.128
   execute ping 10.8.86.130
   ```
   *Resultado:* **$100\%$ loss** (Demuestra el aislamiento: el tráfico fuera del selector de Fase 2 no puede acceder a la red privada).
+<img width="633" height="215" alt="image" src="https://github.com/user-attachments/assets/c545181a-9c0e-450f-8a32-5908acaf9c71" />
 
 #### 5. Verificación en Servidor Ubuntu
 ```bash
@@ -227,20 +242,28 @@ sudo ufw status
 ```
 
 ---
+<img width="1181" height="500" alt="image" src="https://github.com/user-attachments/assets/5d423780-9494-4744-805c-71e8178e4034" />
+
 
 ## 8. Diagramas y Evidencias
 
 ### 8.1 Evidencia: Estado del Túnel IPsec (UP / Verde)
-![IPsec Monitor](docs/images/01-ipsec-monitor.png)
+FORTIGATE A:
+<img width="1651" height="902" alt="image" src="https://github.com/user-attachments/assets/b9d80ff5-902e-4991-9601-5a489706a19d" />
+
+FORTIGATE B: 
+<img width="1641" height="801" alt="image" src="https://github.com/user-attachments/assets/eb0af231-3dff-42cd-8a97-df951a930661" />
 
 ### 8.2 Evidencia: Políticas de Firewall Sin NAT
-![Firewall Policies](docs/images/02-firewall-policies.png)
+<img width="992" height="912" alt="image" src="https://github.com/user-attachments/assets/ab345b11-a68f-45da-b7ea-d222ff44f4d4" />
+<img width="1672" height="921" alt="image" src="https://github.com/user-attachments/assets/b3be16bf-6007-4b0b-acc4-aaba947dddd6" />
 
 ### 8.3 Evidencia: Captura de Paquetes (Sniffer CLI)
-![Sniffer CLI](docs/images/03-sniffer-cli.png)
+<img width="840" height="334" alt="image" src="https://github.com/user-attachments/assets/d3179b40-32b9-42ea-ac0b-a932ce069aa8" />
+
 
 ### 8.4 Evidencia: Respuesta ICMP en Cliente
-![Ping Success](docs/images/04-ping-success.png)
+<img width="588" height="521" alt="image" src="https://github.com/user-attachments/assets/0371d0b3-fd5a-47d6-bbaa-39825d42d726" />
 
 ---
 
