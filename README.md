@@ -76,8 +76,10 @@ El esquema IP fue diseñado de manera jerárquica utilizando los últimos dígit
 ## 4. Funcionamiento de la Configuración
 1. **Fase IKEv2 y Cifrado:** Ambos FortiGates negocian una asociación de seguridad (SA) mediante **IKEv2** utilizando la clave precompartida `Secreta123` y la propuesta criptográfica `AES128-SHA256` con Diffie-Hellman Group `14`.
 2. **Selectores de Fase 2:**
-   * **Sitio A:** Local `10.8.86.0/25` $ightarrow$ Remote `10.8.86.128/28`.
-   * **Sitio B:** Local `10.8.86.128/28` $ightarrow$ Remote `10.8.86.0/25`.
+   * **Sitio A:** Local `10.8.86.0/25` $
+ightarrow$ Remote `10.8.86.128/28`.
+   * **Sitio B:** Local `10.8.86.128/28` $
+ightarrow$ Remote `10.8.86.0/25`.
 3. **Enrutamiento Estático:** Cada firewall dirige el tráfico de la red privada opuesta hacia la interfaz virtual `VPN-Nueva`.
 4. **Bypass de NAT:** Las políticas de firewall permiten el flujo bidireccional manteniendo el **NAT desactivado**, preservando las cabeceras IP originales para que coincidan con los selectores del túnel.
 
