@@ -1,0 +1,77 @@
+config system interface
+    edit "port1"
+        set mode static
+        set ip 192.168.56.60 255.255.255.0
+        set allowaccess ping https ssh
+    next
+    edit "port2"
+        set mode static
+        set ip 10.8.86.129 255.255.255.240
+        set allowaccess ping
+    next
+end
+
+config system dhcp server
+    edit 1
+        set default-gateway 10.8.86.129
+        set netmask 255.255.255.240
+        set interface "port2"
+        config ip-range
+            edit 1
+                set start-ip 10.8.86.130
+                set end-ip 10.8.86.142
+            next
+        end
+    next
+end
+
+config vpn ipsec phase1-interface
+    edit "VPN-Nueva"
+        set interface "port1"
+        set ike-version 2
+        set peertype any
+        set net-device disable
+        set proposal aes128-sha256
+        set remote-gw 192.168.56.50
+        set psksecret Secreta123
+    next
+end
+
+config vpn ipsec phase2-interface
+    edit "P2-B"
+        set phase1name "VPN-Nueva"
+        set proposal aes128-sha256
+        set src-subnet 10.8.86.128 255.255.255.240
+        set dst-subnet 10.8.86.0 255.255.255.128
+    next
+end
+
+config router static
+    edit 1
+        set dst 10.8.86.0 255.255.255.128
+        set device "VPN-Nueva"
+    next
+end
+
+config firewall policy
+    edit 1
+        set name "LAN_a_VPN"
+        set srcintf "port2"
+        set dstintf "VPN-Nueva"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+    next
+    edit 2
+        set name "VPN_a_LAN"
+        set srcintf "VPN-Nueva"
+        set dstintf "port2"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+    next
+end
